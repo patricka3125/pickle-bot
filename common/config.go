@@ -11,5 +11,5 @@ type OpenAPI struct {
 }
 
 type Pickleball struct {
-	documentID string `yaml:"documentId"`
+	DocumentID string `yaml:"documentId"`
 }

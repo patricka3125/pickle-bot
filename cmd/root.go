@@ -33,7 +33,7 @@ var (
 
 			client = lark.NewClient(cfg.OpenAPI.AppID, cfg.OpenAPI.AppKey)
 
-			if err := common.ReadSignupDoc(ctx, client); err != nil {
+			if err := common.ParseSignupTable(ctx, client, cfg.PickleBall.DocumentID, "YgtbdDQoLodXzVx1jr0uRAvtsVd"); err != nil {
 				return err
 			}
 
