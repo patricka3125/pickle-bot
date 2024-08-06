@@ -1,6 +1,7 @@
 package cmd
 
 import (
+	"context"
 	"fmt"
 	"os"
 	"path/filepath"
@@ -17,18 +18,24 @@ const (
 )
 
 var (
-	client  *lark.Client
-	rootCmd = &cobra.Command{
+	client            *lark.Client
+	tenantAccessToken string
+	rootCmd           = &cobra.Command{
 		Use:               "picklebot",
 		Short:             "Picklebot is a CLI tool for Pickleball Lark bot tasks.",
 		PersistentPreRunE: initConfig,
 		RunE: func(cmd *cobra.Command, args []string) error {
-			var cfg common.OpenAPIConfig
+			ctx := context.Background()
+			var cfg common.Config
 			if err := viper.Unmarshal(&cfg); err != nil {
 				return err
 			}
 
-			client = lark.NewClient(cfg.AppID, cfg.AppKey)
+			client = lark.NewClient(cfg.OpenAPI.AppID, cfg.OpenAPI.AppKey)
+
+			if err := common.ReadSignupDoc(ctx, client); err != nil {
+				return err
+			}
 
 			return nil
 		},
@@ -37,8 +44,8 @@ var (
 
 func Execute() error {
 	homeDir, _ := os.UserHomeDir()
+	rootCmd.PersistentFlags().String(cfgFlag, filepath.Join(homeDir, "/.picklebot/config.yaml"), "config file path")
 
-	rootCmd.PersistentFlags().String(cfgFlag, filepath.Join(homeDir+"/.picklebot/config.yaml"), "config file path")
 	if err := rootCmd.Execute(); err != nil {
 		return err
 	}
