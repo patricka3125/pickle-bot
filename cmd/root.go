@@ -5,10 +5,9 @@ import (
 	"os"
 	"path/filepath"
 
+	"github.com/patricka3125/pickle-bot/common"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
-
-	"code.byted.org/patrick.liao/pickle-bot/common"
 
 	lark "github.com/larksuite/oapi-sdk-go/v3"
 )

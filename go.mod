@@ -1,4 +1,4 @@
-module code.byted.org/patrick.liao/pickle-bot
+module github.com/patricka3125/pickle-bot
 
 go 1.21
 
