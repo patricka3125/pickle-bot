@@ -18,9 +18,8 @@ const (
 )
 
 var (
-	client            *lark.Client
-	tenantAccessToken string
-	rootCmd           = &cobra.Command{
+	client  *lark.Client
+	rootCmd = &cobra.Command{
 		Use:               "picklebot",
 		Short:             "Picklebot is a CLI tool for Pickleball Lark bot tasks.",
 		PersistentPreRunE: initConfig,
@@ -33,8 +32,13 @@ var (
 
 			client = lark.NewClient(cfg.OpenAPI.AppID, cfg.OpenAPI.AppKey)
 
-			if err := common.ParseSignupTable(ctx, client, cfg.PickleBall.DocumentID, "YgtbdDQoLodXzVx1jr0uRAvtsVd"); err != nil {
+			data, err := common.GetDocumentBlocks(ctx, client, cfg.PickleBall.DocumentID)
+			if err != nil {
 				return err
+			}
+
+			for _, block := range data {
+				fmt.Println(*block.BlockId)
 			}
 
 			return nil
