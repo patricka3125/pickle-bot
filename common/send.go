@@ -9,7 +9,7 @@ import (
 	larkim "github.com/larksuite/oapi-sdk-go/v3/service/im/v1"
 )
 
-func SendMessage(ctx context.Context, client *lark.Client, hostID, receiveID string,
+func SendMessage(ctx context.Context, client *lark.Client, hostID, receiveId string,
 	date time.Time, startTime, endTime, payment string, courtSize int,
 	roster Roster) error {
 	var fee float32 = 26.0 * float32(courtSize) / float32(len(roster.Players))
@@ -25,10 +25,19 @@ func SendMessage(ctx context.Context, client *lark.Client, hostID, receiveID str
 	}
 	content += `"}`
 
+	var receiveIdType string
+	if receiveId[:2] == "oc" {
+		receiveIdType = "chat_id"
+	} else if receiveId[:2] == "ou" {
+		receiveIdType = "open_id"
+	} else {
+		return fmt.Errorf("receiveID is bad format: %s", receiveId)
+	}
+
 	req := larkim.NewCreateMessageReqBuilder().
-		ReceiveIdType("open_id").
+		ReceiveIdType(receiveIdType).
 		Body(larkim.NewCreateMessageReqBodyBuilder().
-			ReceiveId(receiveID).
+			ReceiveId(receiveId).
 			MsgType("text").
 			Content(content).
 			Build()).
