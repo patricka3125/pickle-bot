@@ -3,6 +3,7 @@ package cmd
 import (
 	"context"
 	"fmt"
+	"strconv"
 	"time"
 
 	"github.com/patricka3125/pickle-bot/common"
@@ -26,11 +27,22 @@ var (
 				return err
 			}
 
+			for _, player := range roster.Players {
+				fmt.Printf("%+v\n", player)
+			}
+			fmt.Println()
+
+			courtSizeIn := prompt("Please enter court size")
+			courtSize, err := strconv.Atoi(courtSizeIn)
+			if courtSize <= 0 {
+				return fmt.Errorf("invalid court size: courtSize=%s", courtSizeIn)
+			}
+
 			courts := prompt("Please enter courts")
 			dateIn := prompt("Please enter date (MM/DD/YYYY)")
 			startTime := prompt("Please enter start time (HH:MM)")
 			endTime := prompt("Please enter end time (HH:MM)")
-			host := prompt("Please enter host uid (ou_xxx)")
+			hostID := prompt("Please enter host uid (ou_xxx)")
 			payment := prompt("Please enter payment link")
 
 			date, err := time.Parse("01/02/2006", dateIn)
@@ -40,16 +52,19 @@ var (
 
 			fmt.Println("\n------------------------------------------------------")
 			fmt.Printf("\nCourts: %s\nPlayers: %d/%d\nHost: %s\nPayment link: %s\n%s, %s %s - %s\n\n",
-				courts, len(roster.Players), roster.Spots, host, payment,
+				courts, len(roster.Players), roster.Spots, hostID, payment,
 				date.Weekday().String(), dateIn, startTime, endTime)
-			for _, player := range roster.Players {
-				fmt.Printf("player: %+v\n", player)
-			}
 
 			proceed := prompt("\nProceed with sending message? (y/n)")
 			if proceed != "y" {
 				fmt.Println("Aborting...")
 				return nil
+			}
+
+			if err := common.SendMessage(ctx, client,
+				hostID, "ou_d68e3cb2a2ccae151f8bc59d85ddb0c8",
+				date, startTime, endTime, payment, courtSize, *roster); err != nil {
+				return err
 			}
 
 			return nil

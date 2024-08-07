@@ -128,9 +128,7 @@ func SignupRoster(blockID string, items []*larkdocx.Block) (*Roster, error) {
 
 					// Empty player
 					if len(strings.TrimSpace(text)) == 0 {
-						cellIter++
-						curPlayer = Player{}
-						continue
+						break
 					}
 
 					text = text[:len(text)-2]
@@ -143,8 +141,10 @@ func SignupRoster(blockID string, items []*larkdocx.Block) (*Roster, error) {
 		// Paid
 		case 2:
 			curPlayer.Paid = *block.Todo.Style.Done
+			if curPlayer.Ouid != "" {
+				result.Players = append(result.Players, curPlayer)
+			}
 
-			result.Players = append(result.Players, curPlayer)
 			curPlayer = Player{}
 		}
 
