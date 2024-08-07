@@ -62,7 +62,7 @@ var (
 			}
 
 			if err := common.SendMessage(ctx, client,
-				hostID, "ou_d68e3cb2a2ccae151f8bc59d85ddb0c8",
+				hostID, cfg.OpenAPI.ReceiveID,
 				date, startTime, endTime, payment, courtSize, *roster); err != nil {
 				return err
 			}

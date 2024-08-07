@@ -9,8 +9,6 @@ import (
 	larkim "github.com/larksuite/oapi-sdk-go/v3/service/im/v1"
 )
 
-// Pickleball group chat ID: oc_31637de07de089a77d95c62e5e815bc7
-// ou_d68e3cb2a2ccae151f8bc59d85ddb0c8
 func SendMessage(ctx context.Context, client *lark.Client, hostID, receiveID string,
 	date time.Time, startTime, endTime, payment string, courtSize int,
 	roster Roster) error {

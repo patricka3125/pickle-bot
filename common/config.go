@@ -6,8 +6,9 @@ type Config struct {
 }
 
 type OpenAPI struct {
-	AppID  string `yaml:"appId"`
-	AppKey string `yaml:"appKey"`
+	AppID     string `yaml:"appId"`
+	AppKey    string `yaml:"appKey"`
+	ReceiveID string `yaml:"receiveId"`
 }
 
 type Pickleball struct {
