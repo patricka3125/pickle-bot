@@ -118,6 +118,12 @@ func SignupRoster(blockID string, items []*larkdocx.Block) (Roster, error) {
 						continue
 					}
 
+					// Empty player
+					if len(strings.TrimSpace(text)) == 0 {
+						cellIter++
+						continue
+					}
+
 					text = text[:len(text)-2]
 					curPlayer.InviteName = text
 				}
