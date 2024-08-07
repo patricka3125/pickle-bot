@@ -17,28 +17,21 @@ const (
 )
 
 var (
-	client  *lark.Client
+	client *lark.Client
+	cfg    common.Config
+
 	rootCmd = &cobra.Command{
 		Use:               "picklebot",
 		Short:             "Picklebot is a CLI tool for Pickleball Lark bot tasks.",
 		PersistentPreRunE: initConfig,
-		RunE: func(cmd *cobra.Command, args []string) error {
-			var cfg common.OpenAPIConfig
-			if err := viper.Unmarshal(&cfg); err != nil {
-				return err
-			}
-
-			client = lark.NewClient(cfg.AppID, cfg.AppKey)
-
-			return nil
-		},
 	}
 )
 
 func Execute() error {
 	homeDir, _ := os.UserHomeDir()
+	rootCmd.PersistentFlags().String(cfgFlag, filepath.Join(homeDir, "/.picklebot/config.yaml"), "config file path")
 
-	rootCmd.PersistentFlags().String(cfgFlag, filepath.Join(homeDir+"/.picklebot/config.yaml"), "config file path")
+	rootCmd.AddCommand(rosterCmd)
 	if err := rootCmd.Execute(); err != nil {
 		return err
 	}
@@ -57,6 +50,11 @@ func initConfig(cmd *cobra.Command, args []string) error {
 	if err := viper.ReadInConfig(); err != nil {
 		return fmt.Errorf("read config file %q failed: %w", path, err)
 	}
+
+	if err := viper.Unmarshal(&cfg); err != nil {
+		return err
+	}
+	client = lark.NewClient(cfg.OpenAPI.AppID, cfg.OpenAPI.AppKey)
 
 	return nil
 }
