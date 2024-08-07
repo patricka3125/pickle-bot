@@ -16,7 +16,10 @@ type Player struct {
 	Paid       bool
 }
 
-type Roster []Player
+type Roster struct {
+	Players []Player
+	Spots   int
+}
 
 func GetDocumentBlocks(ctx context.Context, client *lark.Client, docID string) ([]*larkdocx.Block, error) {
 	var (
@@ -55,7 +58,7 @@ func GetDocumentBlocks(ctx context.Context, client *lark.Client, docID string) (
 	return result, nil
 }
 
-func SignupRoster(blockID string, items []*larkdocx.Block) (Roster, error) {
+func SignupRoster(blockID string, items []*larkdocx.Block) (*Roster, error) {
 	if len(items) == 0 {
 		return nil, fmt.Errorf("data is nil")
 	}
@@ -63,8 +66,12 @@ func SignupRoster(blockID string, items []*larkdocx.Block) (Roster, error) {
 	var (
 		blockIter, cellSize int
 		block               *larkdocx.Block
-		result              Roster = make([]Player, 0)
+		result              *Roster
 	)
+	result = &Roster{
+		Players: make([]Player, 0),
+		Spots:   0,
+	}
 
 	// Get to table block with blockID
 	for blockIter, block = range items {
@@ -74,6 +81,7 @@ func SignupRoster(blockID string, items []*larkdocx.Block) (Roster, error) {
 
 		// found signup table
 		if *block.BlockId == blockID && *block.BlockType == 31 {
+			result.Spots = *block.Table.Property.RowSize - 1
 			cellSize = *block.Table.Property.ColumnSize * *block.Table.Property.RowSize
 			break
 		}
@@ -121,6 +129,7 @@ func SignupRoster(blockID string, items []*larkdocx.Block) (Roster, error) {
 					// Empty player
 					if len(strings.TrimSpace(text)) == 0 {
 						cellIter++
+						curPlayer = Player{}
 						continue
 					}
 
@@ -135,7 +144,7 @@ func SignupRoster(blockID string, items []*larkdocx.Block) (Roster, error) {
 		case 2:
 			curPlayer.Paid = *block.Todo.Style.Done
 
-			result = append(result, curPlayer)
+			result.Players = append(result.Players, curPlayer)
 			curPlayer = Player{}
 		}
 

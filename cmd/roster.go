@@ -26,6 +26,7 @@ var (
 				return err
 			}
 
+			courts := prompt("Please enter courts")
 			dateIn := prompt("Please enter date (MM/DD/YYYY)")
 			startTime := prompt("Please enter start time (HH:MM)")
 			endTime := prompt("Please enter end time (HH:MM)")
@@ -38,9 +39,10 @@ var (
 			}
 
 			fmt.Println("\n------------------------------------------------------")
-			fmt.Printf("\nHost: %s\nPayment link: %s\n%s, %s %s - %s\n\n",
-				host, payment, date.Weekday().String(), dateIn, startTime, endTime)
-			for _, player := range roster {
+			fmt.Printf("\nCourts: %s\nPlayers: %d/%d\nHost: %s\nPayment link: %s\n%s, %s %s - %s\n\n",
+				courts, len(roster.Players), roster.Spots, host, payment,
+				date.Weekday().String(), dateIn, startTime, endTime)
+			for _, player := range roster.Players {
 				fmt.Printf("player: %+v\n", player)
 			}
 
