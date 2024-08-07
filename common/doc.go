@@ -3,16 +3,17 @@ package common
 import (
 	"context"
 	"fmt"
+	"strings"
 
 	lark "github.com/larksuite/oapi-sdk-go/v3"
-	larkcore "github.com/larksuite/oapi-sdk-go/v3/core"
 	larkdocx "github.com/larksuite/oapi-sdk-go/v3/service/docx/v1"
 )
 
 type Player struct {
-	num  int
-	name string
-	paid bool
+	Number     string
+	InviteName string
+	Ouid       string
+	Paid       bool
 }
 
 type Roster []Player
@@ -54,65 +55,86 @@ func GetDocumentBlocks(ctx context.Context, client *lark.Client, docID string) (
 	return result, nil
 }
 
-func ParseSignupTable(ctx context.Context, client *lark.Client, docID, blockID string) error {
-	readReq := larkdocx.NewGetDocumentBlockReqBuilder().
-		DocumentId(docID).
-		BlockId(blockID).
-		DocumentRevisionId(-1).
-		Build()
-
-	resp, err := client.Docx.DocumentBlock.Get(ctx, readReq)
-	if err != nil {
-		return fmt.Errorf("failed to send request, err=%w", err)
-	}
-
-	if !resp.Success() {
-		fmt.Println(resp.Code, resp.Msg, resp.RequestId())
-		return fmt.Errorf("failed to list document blocks: %+v", resp)
-	}
-	fmt.Println(larkcore.Prettify(resp))
-
-	return nil
-}
-
-func getSignupRoster(blockID string, items []*larkdocx.Block) (Roster, error) {
+func SignupRoster(blockID string, items []*larkdocx.Block) (Roster, error) {
 	if len(items) == 0 {
 		return nil, fmt.Errorf("data is nil")
 	}
 
 	var (
-		i, columnSize, cellSize int
-		block                   *larkdocx.Block
+		blockIter, cellSize int
+		block               *larkdocx.Block
+		result              Roster = make([]Player, 0)
 	)
 
 	// Get to table block with blockID
-	for i, block = range items {
+	for blockIter, block = range items {
 		if block == nil {
 			continue
 		}
 
 		// found signup table
-		if *block.BlockId == blockID || *block.BlockType == 32 {
-			columnSize = *block.Table.Property.ColumnSize
+		if *block.BlockId == blockID && *block.BlockType == 31 {
 			cellSize = *block.Table.Property.ColumnSize * *block.Table.Property.RowSize
 			break
 		}
 	}
-	if columnSize == 0 || cellSize == 0 {
-		return nil, fmt.Errorf("table with blockID=%q not found")
+	if cellSize == 0 {
+		return nil, fmt.Errorf("table with blockID=%q not found", blockID)
 	}
 
-	for i < cellSize {
-		block = items[i]
-		if block == nil {
-			return nil, fmt.Errorf("block is nil, blockID=%q, i=%d")
+	var (
+		headerCellCount, cellIter int
+		curPlayer                 Player
+	)
+
+	for i := 1; cellIter < cellSize; i++ {
+		if block = items[blockIter+i]; block == nil {
+			return nil, fmt.Errorf("block is nil, blockID=%q, i=%d", blockID, i)
 		}
 
 		// Ignore table cell block
 		if *block.BlockType == 32 {
 			continue
 		}
+
+		// Skip parsing the table header
+		if headerCellCount < 3 {
+			headerCellCount++
+			cellIter++
+			continue
+		}
+
+		switch cellIter % 3 {
+		// No.
+		case 0:
+			curPlayer.Number = *block.Text.Elements[0].TextRun.Content
+		// Name
+		case 1:
+			// Handle text element and mention element
+			for _, element := range block.Text.Elements {
+				if element.TextRun != nil {
+					text := *element.TextRun.Content
+					if strings.TrimSpace(text) == ")" {
+						continue
+					}
+
+					text = text[:len(text)-2]
+					curPlayer.InviteName = text
+				}
+				if element.MentionUser != nil {
+					curPlayer.Ouid = *element.MentionUser.UserId
+				}
+			}
+		// Paid
+		case 2:
+			curPlayer.Paid = *block.Todo.Style.Done
+
+			result = append(result, curPlayer)
+			curPlayer = Player{}
+		}
+
+		cellIter++
 	}
 
-	return nil, nil
+	return result, nil
 }
