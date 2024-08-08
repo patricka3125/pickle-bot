@@ -1,9 +1,12 @@
 package cmd
 
 import (
+	"bufio"
 	"context"
 	"fmt"
+	"os"
 	"strconv"
+	"strings"
 	"time"
 
 	"github.com/patricka3125/pickle-bot/common"
@@ -73,9 +76,9 @@ var (
 )
 
 func prompt(msg string) string {
-	var input string
-	fmt.Printf("%s : ", msg)
-	fmt.Scanf("%s", &input)
+	fmt.Printf("%s: ", msg)
+	in := bufio.NewReader(os.Stdin)
+	input, _ := in.ReadString('\n')
 
-	return input
+	return strings.TrimSpace(input)
 }
