@@ -14,12 +14,18 @@ import (
 )
 
 var (
-	rosterCmd = &cobra.Command{
+	withFeeFlag bool
+	rosterCmd   = &cobra.Command{
 		Use:   "roster <signup_table_block_id>",
 		Short: "List the final roster for a pickleball session.",
 		Args:  cobra.ExactArgs(1),
 		RunE: func(cmd *cobra.Command, args []string) error {
 			ctx := context.Background()
+			withFee, err := cmd.Flags().GetBool("with-fee")
+			if err != nil {
+				return err
+			}
+
 			data, err := common.GetDocumentBlocks(ctx, client, cfg.PickleBall.DocumentID)
 			if err != nil {
 				return err
@@ -46,7 +52,11 @@ var (
 			startTime := prompt("Please enter start time (HH:MM)")
 			endTime := prompt("Please enter end time (HH:MM)")
 			hostID := prompt("Please enter host uid (ou_xxx)")
-			payment := prompt("Please enter payment link")
+
+			var payment string
+			if withFee {
+				payment = prompt("Please enter payment link")
+			}
 
 			date, err := time.Parse("01/02/2006", dateIn)
 			if err != nil {
@@ -66,7 +76,7 @@ var (
 
 			if err := common.SendMessage(ctx, client,
 				hostID, cfg.OpenAPI.ReceiveID,
-				date, startTime, endTime, payment, courtSize, *roster); err != nil {
+				date, startTime, endTime, payment, withFee, courtSize, courts, *roster); err != nil {
 				return err
 			}
 
