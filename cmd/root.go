@@ -31,6 +31,8 @@ func Execute() error {
 	homeDir, _ := os.UserHomeDir()
 	rootCmd.PersistentFlags().String(cfgFlag, filepath.Join(homeDir, "/.picklebot/config.yaml"), "config file path")
 
+	rosterCmd.Flags().BoolVar(&withFeeFlag, "with-fee", false, "Include fee in the message")
+
 	rootCmd.AddCommand(rosterCmd)
 	if err := rootCmd.Execute(); err != nil {
 		return err

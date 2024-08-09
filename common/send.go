@@ -10,18 +10,23 @@ import (
 )
 
 func SendMessage(ctx context.Context, client *lark.Client, hostID, receiveId string,
-	date time.Time, startTime, endTime, payment string, courtSize int,
-	roster Roster) error {
-	var fee float32 = 26.0 * float32(courtSize) / float32(len(roster.Players))
+	date time.Time, startTime, endTime, payment string,
+	withFee bool, courtSize int, courts string, roster Roster) error {
+	content := fmt.Sprintf(`{"text":"<b>%s %s %s - %s</b>\nCourt #: %s\n`, date.Weekday().String(), date.Format("01/02"), startTime, endTime, courts) +
+		fmt.Sprintf(`Host: <at user_id=\"%s\"></at>\n`, hostID)
 
-	content := fmt.Sprintf(`{"text":"<b>%s %s %s - %s</b>\nCourt #: 5-8\n`, date.Weekday().String(), date.Format("01/02"), startTime, endTime) +
-		fmt.Sprintf(`Host: <at user_id=\"%s\"></at>\n`, hostID) +
-		fmt.Sprintf(`Reserve fee: <b>$%0.02f</b> to %s\n\n`, fee, payment) +
-		`------------------------------------ \n` +
+	if withFee {
+		var fee float32 = 26.0 * float32(courtSize) / float32(len(roster.Players))
+		content += fmt.Sprintf(`Reserve fee: <b>$%0.02f</b> to %s\n\n`, fee, payment)
+	}
+
+	content += `------------------------------------ \n` +
 		fmt.Sprintf(`Players (%d/%d) :\n\n`, len(roster.Players), roster.Spots)
 
 	for _, player := range roster.Players {
-		content += fmt.Sprintf(`%s. %s<at user_id=\"%s\"></at>\n`, player.Number, player.InviteName, player.Ouid)
+		if !withFee || !player.Paid {
+			content += fmt.Sprintf(`%s. %s<at user_id=\"%s\"></at>\n`, player.Number, player.InviteName, player.Ouid)
+		}
 	}
 	content += `"}`
 
