@@ -10,14 +10,17 @@ import (
 )
 
 func SendMessage(ctx context.Context, client *lark.Client, hostID, receiveId string,
-	date time.Time, startTime, endTime, payment string,
+	date time.Time, startTime, endTime, payment string, note string,
 	withFee bool, courtSize int, courts string, roster Roster) error {
 	content := fmt.Sprintf(`{"text":"<b>%s %s %s - %s</b>\nCourt #: %s\n`, date.Weekday().String(), date.Format("01/02"), startTime, endTime, courts) +
 		fmt.Sprintf(`Host: <at user_id=\"%s\"></at>\n`, hostID)
 
 	if withFee {
 		var fee float32 = 26.0 * float32(courtSize) / float32(len(roster.Players))
-		content += fmt.Sprintf(`Reserve fee: <b>$%0.02f</b> to %s\n\n`, fee, payment)
+		content += fmt.Sprintf(`Reserve fee: <b>$%0.02f</b> to %s\n`, fee, payment)
+	}
+	if note != "" {
+		content += fmt.Sprintf(`Note: %s\n`, note)
 	}
 
 	content += `------------------------------------ \n` +
