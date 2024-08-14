@@ -13,7 +13,9 @@ import (
 )
 
 const (
-	cfgFlag = "config"
+	cfgFlag  = "config"
+	feeFlag  = "with-fee"
+	noteFlag = "notes"
 )
 
 var (
@@ -31,7 +33,8 @@ func Execute() error {
 	homeDir, _ := os.UserHomeDir()
 	rootCmd.PersistentFlags().String(cfgFlag, filepath.Join(homeDir, "/.picklebot/config.yaml"), "config file path")
 
-	rosterCmd.Flags().BoolVar(&withFeeFlag, "with-fee", false, "Include fee in the message")
+	rosterCmd.Flags().Bool(feeFlag, false, "include fee in the message")
+	rosterCmd.Flags().Bool(noteFlag, false, "include an additional note in the message")
 
 	rootCmd.AddCommand(rosterCmd)
 	if err := rootCmd.Execute(); err != nil {

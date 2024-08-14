@@ -21,7 +21,7 @@ var (
 		Args:  cobra.ExactArgs(1),
 		RunE: func(cmd *cobra.Command, args []string) error {
 			ctx := context.Background()
-			withFee, err := cmd.Flags().GetBool("with-fee")
+			withFee, err := cmd.Flags().GetBool(feeFlag)
 			if err != nil {
 				return err
 			}
@@ -53,6 +53,11 @@ var (
 			endTime := prompt("Please enter end time (HH:MM)")
 			hostID := prompt("Please enter host uid (ou_xxx)")
 
+			var note string
+			if addNote, _ := cmd.Flags().GetBool(noteFlag); addNote {
+				note = prompt("Please enter additional note")
+			}
+
 			var payment string
 			if withFee {
 				payment = prompt("Please enter payment link")
@@ -76,7 +81,8 @@ var (
 
 			if err := common.SendMessage(ctx, client,
 				hostID, cfg.OpenAPI.ReceiveID,
-				date, startTime, endTime, payment, withFee, courtSize, courts, *roster); err != nil {
+				date, startTime, endTime, payment, note,
+				withFee, courtSize, courts, *roster); err != nil {
 				return err
 			}
 
