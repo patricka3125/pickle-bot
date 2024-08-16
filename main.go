@@ -3,7 +3,7 @@ package main
 import (
 	"os"
 
-	"github.com/patricka3125/pickle-bot/cmd"
+	"github.com/patricka3125/picklebot/cmd"
 )
 
 func main() {
