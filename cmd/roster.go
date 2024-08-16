@@ -9,7 +9,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/patricka3125/pickle-bot/common"
+	"github.com/patricka3125/picklebot/common"
 	"github.com/spf13/cobra"
 )
 

@@ -1,4 +1,4 @@
-module github.com/patricka3125/pickle-bot
+module github.com/patricka3125/picklebot
 
 go 1.21
 

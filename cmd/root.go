@@ -5,7 +5,7 @@ import (
 	"os"
 	"path/filepath"
 
-	"github.com/patricka3125/pickle-bot/common"
+	"github.com/patricka3125/picklebot/common"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
 
