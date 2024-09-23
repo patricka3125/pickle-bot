@@ -3,17 +3,16 @@ package common
 import (
 	"context"
 	"fmt"
-	"strings"
+	"os"
 
 	lark "github.com/larksuite/oapi-sdk-go/v3"
 	larkdocx "github.com/larksuite/oapi-sdk-go/v3/service/docx/v1"
 )
 
 type Player struct {
-	Number     string
-	InviteName string
-	Ouid       string
-	Paid       bool
+	Number string
+	Name   string
+	Paid   bool
 }
 
 type Roster struct {
@@ -112,6 +111,14 @@ func SignupRoster(blockID string, items []*larkdocx.Block) (*Roster, error) {
 			continue
 		}
 
+		// recover from table cell parsing panic
+		defer func() {
+			if r := recover(); r != nil {
+				fmt.Fprintf(os.Stderr, "failed to parse table cell\n")
+				fmt.Fprintf(os.Stderr, "panic: %v\n", r)
+			}
+		}()
+
 		switch cellIter % 3 {
 		// No.
 		case 0:
@@ -121,27 +128,16 @@ func SignupRoster(blockID string, items []*larkdocx.Block) (*Roster, error) {
 			// Handle text element and mention element
 			for _, element := range block.Text.Elements {
 				if element.TextRun != nil {
-					text := *element.TextRun.Content
-					if strings.TrimSpace(text) == ")" {
-						continue
-					}
-
-					// Empty player
-					if len(strings.TrimSpace(text)) == 0 {
-						break
-					}
-
-					text = text[:len(text)-2]
-					curPlayer.InviteName = text
+					curPlayer.Name += *element.TextRun.Content
 				}
 				if element.MentionUser != nil {
-					curPlayer.Ouid = *element.MentionUser.UserId
+					curPlayer.Name += fmt.Sprintf(`<at user_id=\"%s\"></at>`, *element.MentionUser.UserId)
 				}
 			}
 		// Paid
 		case 2:
 			curPlayer.Paid = *block.Todo.Style.Done
-			if curPlayer.Ouid != "" {
+			if curPlayer.Name != "" {
 				result.Players = append(result.Players, curPlayer)
 			}
 

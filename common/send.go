@@ -16,7 +16,7 @@ func SendMessage(ctx context.Context, client *lark.Client, hostID, receiveId str
 		fmt.Sprintf(`Host: <at user_id=\"%s\"></at>\n`, hostID)
 
 	if withFee {
-		var fee float32 = 26.0 * float32(courtSize) / float32(len(roster.Players))
+		var fee float32 = 20.0 * float32(courtSize) / float32(len(roster.Players))
 		content += fmt.Sprintf(`Reserve fee: <b>$%0.02f</b> to %s\n`, fee, payment)
 	}
 	if note != "" {
@@ -28,7 +28,7 @@ func SendMessage(ctx context.Context, client *lark.Client, hostID, receiveId str
 
 	for _, player := range roster.Players {
 		if !withFee || !player.Paid {
-			content += fmt.Sprintf(`%s. %s<at user_id=\"%s\"></at>\n`, player.Number, player.InviteName, player.Ouid)
+			content += fmt.Sprintf(`%s. %s\n`, player.Number, player.Name)
 		}
 	}
 	content += `"}`
